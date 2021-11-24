@@ -33,9 +33,18 @@ public interface Provider {
      */
     RetentionType retentionType();
 
+    /**
+     * Basic Provider implementation used for easily create a Provider
+     * for a resolver.
+     *
+     * <p>
+     * Use any of the {@link #of(Supplier, RetentionType) of} methods
+     * to easily create a Provider implementation with the given
+     * parameters.
+     */
     class ProviderImpl implements Provider {
-        private Supplier<String> value;
-        private RetentionType type;
+        private final Supplier<String> value;
+        private final RetentionType type;
 
         public ProviderImpl(Supplier<String> value, RetentionType type) {
             this.value = value;
@@ -58,23 +67,47 @@ public interface Provider {
         }
     }
 
+    /**
+     * Creates a provider with the given string supplier and the
+     * given RetentionType.
+     *
+     * @param supplier which will return the string value the
+     *                 Provider will always use on {@link #get()}.
+     * @param type of the retention of this value.
+     *
+     * @return the provider of the given supplier and the given
+     * retention type.
+     */
     @Contract(value = "_, _ -> new", pure = true)
-    static @NotNull Provider of(String string, RetentionType type) {
-        return new ProviderImpl(string, type);
+    static @NotNull Provider of(Supplier<String> supplier, RetentionType type) {
+        return new ProviderImpl(supplier, type);
     }
 
-    @Contract(value = "_, _ -> new", pure = true)
-    static @NotNull Provider of(Supplier<String> string, RetentionType type) {
-        return new ProviderImpl(string, type);
-    }
-
+    /**
+     * Creates a provider of a fixed value with a
+     * {@link RetentionType#CACHED cached} retention value.
+     *
+     * @param string the value this provider will always return.
+     *
+     * @return the provider of the given fixed value.
+     */
     @Contract(value = "_ -> new", pure = true)
     static @NotNull Provider of(String string) {
         return new ProviderImpl(string, RetentionType.CACHED);
     }
 
+    /**
+     * Creates a provider with the given string supplier and
+     * {@link RetentionType#LAZY lazy} {@link RetentionType}.
+     *
+     * @param supplier which will return the string value the
+     *                 Provider will always use on {@link #get()}.
+     *
+     * @return the provider of the given supplier and
+     * {@link RetentionType#LAZY lazy} {@link RetentionType}.
+     */
     @Contract(value = "_ -> new", pure = true)
-    static @NotNull Provider of(Supplier<String> string) {
-        return new ProviderImpl(string, RetentionType.LAZY);
+    static @NotNull Provider of(Supplier<String> supplier) {
+        return new ProviderImpl(supplier, RetentionType.LAZY);
     }
 }
