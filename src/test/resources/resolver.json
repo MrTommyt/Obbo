@@ -1,0 +1,24 @@
+{
+  "variables": {
+    "base": "mr.tommy.obbo.test",
+    "1": "@base@.v1",
+    "2": "@base@.v2",
+    "nms": {
+      "provider": "@base@.NMSProvider"
+    }
+  },
+  "replacements": {
+    "@1@.C1": [
+      {
+        "method": "method",
+        "original": "method1"
+      }
+    ],
+    "@2@.C2": [
+      {
+        "method": "method",
+        "original": "method2"
+      }
+    ]
+  }
+}
