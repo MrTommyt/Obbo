@@ -25,7 +25,7 @@ to resolve the variable values, the default resolver is the
 and declare creating then the Obbo instance:
 
 ```java
-import mr.tommy.Obbo;
+import mr.tommy.obbo.Obbo;
 import mr.tommy.obbo.mapping.resolver.Provider;
 import mr.tommy.obbo.mapping.resolver.json.JsonResolver;
 

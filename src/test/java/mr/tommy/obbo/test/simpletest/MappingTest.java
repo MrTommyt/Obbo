@@ -1,6 +1,6 @@
 package mr.tommy.obbo.test.simpletest;
 
-import mr.tommy.Obbo;
+import mr.tommy.obbo.Obbo;
 import mr.tommy.obbo.mapping.resolver.Provider;
 import mr.tommy.obbo.mapping.resolver.RetentionType;
 import mr.tommy.obbo.mapping.resolver.json.JsonResolver;

@@ -1,4 +1,4 @@
-package mr.tommy;
+package mr.tommy.obbo;
 
 import mr.tommy.obbo.mapping.Resolver;
 import mr.tommy.obbo.mapping.resolver.Provider;
