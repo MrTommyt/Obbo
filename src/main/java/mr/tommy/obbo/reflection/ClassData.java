@@ -7,8 +7,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Holds the Data of a Class and caches in here all their methods
@@ -18,8 +20,8 @@ import java.util.Map;
 public class ClassData {
     //Global cache holding the class data of all the classes having
     // them cached and easily retrieved by the `of` methods.
-    private static final Map<Class<?>, ClassData> data = new HashMap<>();
-    private static final Map<String, ClassData> classCache = new HashMap<>();
+    private static final Map<String, Class<?>> classCache = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Class<?>, ClassData> data = Collections.synchronizedMap(new HashMap<>());
 
     //--- Instance cache ---
     //This is the cache used when retrieving the fields, methods,
@@ -31,10 +33,12 @@ public class ClassData {
     // while the previous member is already stored here, there won't
     // be any way to check this change and the ClassData will just
     // continue using wrong information.
-    private final Map<String, Field> fieldMap = new HashMap<>();
-    private final Map<Class<? extends Annotation>, Annotation> annotationMap = new HashMap<>();
-    private final Map<MethodDescriptor, Method> methodMap = new HashMap<>();
-    private final Map<MethodDescriptor, Constructor<?>> constructorMap = new HashMap<>();
+    private final Map<String, Field> fieldMap = Collections.synchronizedMap(new WeakHashMap<>());
+    private final Map<Class<? extends Annotation>, Annotation> annotationMap =
+            Collections.synchronizedMap(new WeakHashMap<>());
+    private final Map<MethodDescriptor, Method> methodMap = Collections.synchronizedMap(new WeakHashMap<>());
+    private final Map<MethodDescriptor, Constructor<?>> constructorMap =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     //--- Instance fields ---
     private final Class<?> cls;
@@ -70,7 +74,9 @@ public class ClassData {
      * @return the class data of the given class.
      */
     public static ClassData of(Class<?> cls) {
-        return Utils.getOrPut(data, cls, () -> new ClassData(cls));
+        synchronized (data) {
+            return Utils.getOrPut(data, cls, () -> new ClassData(cls));
+        }
     }
 
     /**
@@ -84,14 +90,17 @@ public class ClassData {
      * @return the Class Data of the given className.
      */
     public static ClassData of(String className) {
-        return Utils.getOrPut(classCache, className, () -> {
-            try {
-                return new ClassData(Class.forName(className));
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+        synchronized (classCache) {
+            Class<?> cls = Utils.getOrPut(classCache, className, () -> {
+                try {
+                    return Class.forName(className);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+            return of(cls);
+        }
     }
 
     /**
@@ -117,16 +126,18 @@ public class ClassData {
      * @return the field at that name.
      */
     public Field field(String name) {
-        return Utils.getOrPut(fieldMap, name, () -> {
-            try {
-                Field field = cls.getDeclaredField(name);
-                field.setAccessible(true);
-                return field;
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+        synchronized (fieldMap) {
+            return Utils.getOrPut(fieldMap, name, () -> {
+                try {
+                    Field field = cls.getDeclaredField(name);
+                    field.setAccessible(true);
+                    return field;
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+        }
     }
 
     /**
@@ -142,7 +153,9 @@ public class ClassData {
      * @return the field at that name.
      */
     public <A extends Annotation> A annotation(@NotNull Class<A> cls) {
-        return cls.cast(Utils.getOrPut(annotationMap, cls, () -> this.cls.getDeclaredAnnotation(cls)));
+        synchronized (annotationMap) {
+            return cls.cast(Utils.getOrPut(annotationMap, cls, () -> this.cls.getDeclaredAnnotation(cls)));
+        }
     }
 
     /**
@@ -163,16 +176,18 @@ public class ClassData {
      * descriptor
      */
     public Method method(MethodDescriptor descriptor) {
-        return Utils.getOrPut(methodMap, descriptor, () -> {
-            try {
-                Method method = cls.getDeclaredMethod(descriptor.getName(), descriptor.getParamTypes());
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+        synchronized (methodMap) {
+            return Utils.getOrPut(methodMap, descriptor, () -> {
+                try {
+                    Method method = cls.getDeclaredMethod(descriptor.getName(), descriptor.getParamTypes());
+                    method.setAccessible(true);
+                    return method;
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+        }
     }
 
     /**
@@ -194,18 +209,20 @@ public class ClassData {
      * descriptor
      */
     public Constructor<?> constructor(Class<?>... paramTypes) {
-        return Utils.getOrPut(constructorMap, MethodDescriptor.builder(null)
-                .parameterTypes(paramTypes)
-                .build(), () -> {
-            try {
-                Constructor<?> constructor = cls.getDeclaredConstructor(paramTypes);
-                constructor.setAccessible(true);
-                return constructor;
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+        synchronized (constructorMap) {
+            return Utils.getOrPut(constructorMap, MethodDescriptor.builder(null)
+                    .parameterTypes(paramTypes)
+                    .build(), () -> {
+                try {
+                    Constructor<?> constructor = cls.getDeclaredConstructor(paramTypes);
+                    constructor.setAccessible(true);
+                    return constructor;
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+        }
     }
 
     /**
