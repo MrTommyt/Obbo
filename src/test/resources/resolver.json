@@ -1,6 +1,6 @@
 {
   "variables": {
-    "base": "mr.tommy.obbo.test",
+    "base": "mr.tommy.obbo.test.simpletest",
     "1": "@base@.v1",
     "2": "@base@.v2",
     "nms": {
