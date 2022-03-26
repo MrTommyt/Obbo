@@ -178,14 +178,19 @@ public class ClassData {
     public Method method(MethodDescriptor descriptor) {
         synchronized (methodMap) {
             return Utils.getOrPut(methodMap, descriptor, () -> {
+                Method method;
                 try {
-                    Method method = cls.getDeclaredMethod(descriptor.getName(), descriptor.getParamTypes());
-                    method.setAccessible(true);
-                    return method;
+                    method = cls.getMethod(descriptor.getName(), descriptor.getParamTypes());
                 } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                    return null;
+                    try {
+                        method = cls.getDeclaredMethod(descriptor.getName(), descriptor.getParamTypes());
+                    } catch (NoSuchMethodException ex) {
+                        ex.printStackTrace();
+                        return null;
+                    }
                 }
+                method.setAccessible(true);
+                return method;
             });
         }
     }
