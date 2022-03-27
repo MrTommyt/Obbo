@@ -72,7 +72,7 @@ public class Obbo {
      */
     public <I> I wrap(Class<I> wrappingInterface, Object target) {
         Object instance = Proxy.newProxyInstance(wrappingInterface.getClassLoader(), new Class[]{wrappingInterface},
-            new ObboInvocationHandler(resolver, wrappingInterface, target));
+            new ObboInvocationHandler(this, resolver, wrappingInterface, target));
         return wrappingInterface.cast(instance);
     }
 
@@ -92,7 +92,7 @@ public class Obbo {
      */
     public <I> I wrap(ClassLoader loader, Class<I> wrappingInterface, Object target) {
         Object instance = Proxy.newProxyInstance(loader, new Class[]{wrappingInterface},
-                new ObboInvocationHandler(resolver, wrappingInterface, target, loader));
+                new ObboInvocationHandler(this, resolver, wrappingInterface, target, loader));
         return wrappingInterface.cast(instance);
     }
 
@@ -112,7 +112,7 @@ public class Obbo {
      */
     public <I> I wrap(ClassLoader loader, ClassLoader handlerClassloader, Class<I> wrappingInterface, Object target) {
         Object instance = Proxy.newProxyInstance(loader, new Class[]{wrappingInterface},
-            new ObboInvocationHandler(resolver, wrappingInterface, target, handlerClassloader));
+            new ObboInvocationHandler(this, resolver, wrappingInterface, target, handlerClassloader));
         return wrappingInterface.cast(instance);
     }
 }

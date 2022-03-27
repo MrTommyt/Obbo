@@ -179,7 +179,13 @@ public class ClassData {
      */
     public <A extends Annotation> A annotation(@NotNull Class<A> cls) {
         synchronized (annotationMap) {
-            return cls.cast(Utils.getOrPut(annotationMap, cls, () -> this.cls.getDeclaredAnnotation(cls)));
+            return cls.cast(Utils.getOrPut(annotationMap, cls, () -> {
+                try {
+                    return this.cls.getDeclaredAnnotation(cls);
+                } catch (Exception ignored) {
+                    return null;
+                }
+            }));
         }
     }
 
