@@ -89,6 +89,30 @@ public class JsonResolver implements Resolver {
     }
 
     /**
+     * Resolves the ClassData based on the class name provided. Using
+     * the {@link ResolveInfo#parseClass(String)} method to parse the class
+     * name provided, keeping in mind that this method is prone to receive
+     * yet unparsed String with non-resolved variables which the {@link #info}
+     * is meant to figure out based on the info on the JSON used.
+     *
+     * <p>
+     * Uses as well the {@link ClassData} to work with the cached Class members
+     * instead of fetching them everytime which is considered a very expensive
+     * operation.
+     *
+     * @param className of the class who is going to ge resolved. This param can
+     *                  be a yet unparsed String with non-resolved variables
+     *                  still in there.
+     * @param loader to load the className given from.
+     *
+     * @return the ClassData of the given class name, null if not found.
+     */
+    @Override
+    public ClassData resolveClass(String className, ClassLoader loader) {
+        return ClassData.of(info.parseClass(className), loader);
+    }
+
+    /**
      * Resolves the method using the {@link #info given data} and the
      * {@link ResolveInfo#parseMethod(String, String)}.
      *

@@ -104,6 +104,31 @@ public class ClassData {
     }
 
     /**
+     * Gets the class data of the given class name.
+     *
+     * @param className used to retrieve the class data from the cache.
+     *                  If none, then the {@link Class#forName(String)} is
+     *                  used to retrieve the Class from and store it in
+     *                  the cache.
+     * @param loader the {@link ClassLoader} of the class to load this from.
+     *
+     * @return the Class Data of the given className.
+     */
+    public static ClassData of(String className, ClassLoader loader) {
+        synchronized (classCache) {
+            Class<?> cls = Utils.getOrPut(classCache, className, () -> {
+                try {
+                    return Class.forName(className, true, loader);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+            return of(cls);
+        }
+    }
+
+    /**
      * Gets the Class data of the given object's class checked from
      * the {@link Object#getClass()} method.
      *

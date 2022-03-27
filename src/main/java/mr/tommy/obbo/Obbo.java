@@ -71,7 +71,9 @@ public class Obbo {
      * encapsulating all their methods.
      */
     public <I> I wrap(Class<I> wrappingInterface, Object target) {
-        return wrap(this.getClass().getClassLoader(), wrappingInterface, target);
+        Object instance = Proxy.newProxyInstance(wrappingInterface.getClassLoader(), new Class[]{wrappingInterface},
+            new ObboInvocationHandler(resolver, wrappingInterface, target));
+        return wrappingInterface.cast(instance);
     }
 
     /**
@@ -90,8 +92,27 @@ public class Obbo {
      */
     public <I> I wrap(ClassLoader loader, Class<I> wrappingInterface, Object target) {
         Object instance = Proxy.newProxyInstance(loader, new Class[]{wrappingInterface},
-                new ObboInvocationHandler(resolver, wrappingInterface, target));
+                new ObboInvocationHandler(resolver, wrappingInterface, target, loader));
         return wrappingInterface.cast(instance);
     }
 
+    /**
+     * Wraps the passed object as a target inside the wrapping interface provided.
+     *
+     * @param loader to load the Proxy instance from.
+     * @param wrappingInterface the interface to use as proxy and control the
+     *                          target with.
+     * @param target instance to wrap inside the interface and where the methods
+     *               will end up being called from.
+     * @param <I> the interface which is going to act as the target instance's
+     *           controller.
+     *
+     * @return a {@link Proxy} of the target as the wrapping interface provided
+     * encapsulating all their methods.
+     */
+    public <I> I wrap(ClassLoader loader, ClassLoader handlerClassloader, Class<I> wrappingInterface, Object target) {
+        Object instance = Proxy.newProxyInstance(loader, new Class[]{wrappingInterface},
+            new ObboInvocationHandler(resolver, wrappingInterface, target, handlerClassloader));
+        return wrappingInterface.cast(instance);
+    }
 }

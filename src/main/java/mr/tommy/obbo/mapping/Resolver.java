@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
  * variables resolved.
  */
 public interface Resolver {
-
     /**
      * Resolves the {@link ClassData} of the parsed class name.
      *
@@ -28,6 +27,16 @@ public interface Resolver {
      * @return the Class Data of the parsed class name given.
      */
     ClassData resolveClass(String className);
+
+    /**
+     * Resolves the {@link ClassData} of the parsed class name.
+     *
+     * @param className of the class who is going to be used.
+     *                  is meant to Support variables inside them.
+     *
+     * @return the Class Data of the parsed class name given.
+     */
+    ClassData resolveClass(String className, ClassLoader loader);
 
     /**
      * Resolves the method of the target class with the given parameters

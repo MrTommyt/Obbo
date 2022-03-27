@@ -49,7 +49,28 @@ public class ObboInvocationHandler implements InvocationHandler {
         this.wrappingInterface = wrappingInterface;
         ClassData classData = ClassData.of(wrappingInterface);
         Proxy proxyInfo = classData.annotation(Proxy.class);
-        this.proxiedClassData = resolver.resolveClass(proxyInfo.value());
+        this.proxiedClassData = resolver.resolveClass(proxyInfo.value(), target.getClass().getClassLoader());
+        this.target = target;
+    }
+
+    /**
+     * Creates a new instance of the Invocation handler used by the
+     * Obbo to resolve methods that can be obfuscated.
+     *
+     * @param resolver used for this Invocation handler to resolve
+     *                 the method original name.
+     * @param wrappingInterface from where the methods are going
+     *                          to be called.
+     * @param target where the parsed method will be invoked from
+     *               when resolved.
+     * @param loader to load the classloader.
+     */
+    public ObboInvocationHandler(@NotNull Resolver resolver, Class<?> wrappingInterface, Object target, ClassLoader loader) {
+        this.resolver = resolver;
+        this.wrappingInterface = wrappingInterface;
+        ClassData classData = ClassData.of(wrappingInterface);
+        Proxy proxyInfo = classData.annotation(Proxy.class);
+        this.proxiedClassData = resolver.resolveClass(proxyInfo.value(), loader);
         this.target = target;
     }
 
