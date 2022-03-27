@@ -145,4 +145,17 @@ public class MethodDescriptor {
     public static @NotNull Builder builder(String name) {
         return new Builder(name);
     }
+
+    /**
+     * Creates a new Method Descriptor builder based on the name
+     * given.
+     *
+     * @param name of the method describing.
+     * @param params parameters of the method.
+     *
+     * @return a builder of the method descriptor.
+     */
+    public static @NotNull Builder builder(String name, Class<?> ...params) {
+        return new Builder(name).parameterTypes(params);
+    }
 }

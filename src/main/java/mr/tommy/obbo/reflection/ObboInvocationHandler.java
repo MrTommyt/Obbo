@@ -115,12 +115,23 @@ public class ObboInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Throwable {
-        Class<?>[] params = fixParameters(method.getParameterTypes());
+        Class<?>[] pTypes = method.getParameterTypes();
+        Class<?>[] params = fixParameters(pTypes);
+        String mName = method.getName();
+
+        //Check if the method does actually have a proxy annotation.
+        // if it does, change the name of the method to the name used
+        // in the annotation.
+        CachedMethod cm = this.proxiedClassData.method(MethodDescriptor.builder(mName, pTypes).build());
+        Proxy mpAnn = cm.getAnnotation(Proxy.class);
+        if (mpAnn != null) {
+            mName = mpAnn.value();
+        }
 
         Method proxyMethod = resolver.resolveMethod(
             proxiedClassData.getCls(),
             wrappingInterface,
-            method.getName(),
+            mName,
             params
         );
 
@@ -130,7 +141,7 @@ public class ObboInvocationHandler implements InvocationHandler {
             if (args != null)
                 for (Object arg : params) joiner.add(arg.getClass().getSimpleName());
             throw new NoSuchMethodError(String.format("method %s(%s) not found on %s(%s)",
-                method.getName(),
+                mName,
                 joiner,
                 target.getClass().getSimpleName(),
                 wrappingInterface.getSimpleName()

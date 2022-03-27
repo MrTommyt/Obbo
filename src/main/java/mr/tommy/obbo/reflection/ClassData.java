@@ -36,7 +36,7 @@ public class ClassData {
     private final Map<String, Field> fieldMap = Collections.synchronizedMap(new WeakHashMap<>());
     private final Map<Class<? extends Annotation>, Annotation> annotationMap =
             Collections.synchronizedMap(new WeakHashMap<>());
-    private final Map<MethodDescriptor, Method> methodMap = Collections.synchronizedMap(new WeakHashMap<>());
+    private final Map<MethodDescriptor, CachedMethod> methodMap = Collections.synchronizedMap(new WeakHashMap<>());
     private final Map<MethodDescriptor, Constructor<?>> constructorMap =
             Collections.synchronizedMap(new WeakHashMap<>());
 
@@ -206,7 +206,7 @@ public class ClassData {
      * @return the method from the class matching the given method
      * descriptor
      */
-    public Method method(MethodDescriptor descriptor) {
+    public CachedMethod method(MethodDescriptor descriptor) {
         synchronized (methodMap) {
             return Utils.getOrPut(methodMap, descriptor, () -> {
                 Method method;
@@ -221,7 +221,7 @@ public class ClassData {
                     }
                 }
                 method.setAccessible(true);
-                return method;
+                return new CachedMethod(method);
             });
         }
     }

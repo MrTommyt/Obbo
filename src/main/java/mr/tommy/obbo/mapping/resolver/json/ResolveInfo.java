@@ -7,6 +7,7 @@ import mr.tommy.obbo.util.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,35 +23,39 @@ public class ResolveInfo {
     public String parseClass(String str) {
         Matcher matcher = replacePattern.matcher(str);
         boolean m = matcher.matches();
-        return matcher.find() ? parseClass(matcher.replaceAll(mr -> {
-            String group = mr.group(1);
-            Provider p = Utils.getOrPut(providers, group, () -> {
-                Provider provider = factory.getResolver().getRegistry().getRegisteredProvider(group);
-                if (provider != null)
-                    return provider;
-
-                JsonElement variable = variables.get(group);
-                if (variable == null)
-                    return null;
-
-                provider = factory.from(variable);
-                if (provider == null)
-                    return null;
-
-                providers.put(group, provider);
-                return provider;
-            });
-            return p == null ? group : p.get();
-        })) : str;
+        return matcher.find() ? parseClass(matcher.replaceAll(this::replacer)) : str;
     }
 
     public String parseMethod(String method, String cls) {
         ClassInfo cInfo = getClassInfo().get(parseClass(cls));
         if (cInfo != null) {
             MemberInfo member = cInfo.member(method);
-            return member != null ? member.getOriginal() : method;
+            if (member != null) return member.getOriginal();
         }
-        return method;
+        Matcher matcher = replacePattern.matcher(method);
+        boolean m = matcher.matches();
+        return matcher.find() ? parseMethod(matcher.replaceAll(this::replacer), cls) : method;
+    }
+
+    private String replacer(MatchResult mr) {
+        String group = mr.group(1);
+        Provider p = Utils.getOrPut(providers, group, () -> {
+            Provider provider = factory.getResolver().getRegistry().getRegisteredProvider(group);
+            if (provider != null)
+                return provider;
+
+            JsonElement variable = variables.get(group);
+            if (variable == null)
+                return null;
+
+            provider = factory.from(variable);
+            if (provider == null)
+                return null;
+
+            providers.put(group, provider);
+            return provider;
+        });
+        return p == null ? group : p.get();
     }
 
     public String parseField(String name) {

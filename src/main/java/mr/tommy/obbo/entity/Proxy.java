@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * <strong>This annotation is mandatory</strong> in order to make the process work
  * correctly
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Proxy {
     /**

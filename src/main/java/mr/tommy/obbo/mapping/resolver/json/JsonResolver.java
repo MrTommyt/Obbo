@@ -136,8 +136,8 @@ public class JsonResolver implements Resolver {
     @Override
     public Method resolveMethod(Class<?> targetClass, Class<?> wrappingInterface, String methodName, Class<?>... params) {
         ClassData data = ClassData.of(targetClass);
-        return data.method(MethodDescriptor.builder(info.parseMethod(methodName, data.getName()))
-                .parameterTypes(params).build());
+        return data.method(MethodDescriptor.builder(info.parseMethod(methodName, data.getName()), params)
+            .build()).getMethod();
     }
 
     /**
