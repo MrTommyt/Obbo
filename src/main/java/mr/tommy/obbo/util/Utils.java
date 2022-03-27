@@ -1,7 +1,6 @@
 package mr.tommy.obbo.util;
 
 import com.google.gson.Gson;
-import mr.tommy.obbo.entity.Proxy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +32,8 @@ public class Utils {
      * @return the value in the map at the given key if there is none or null then the
      * value provided by the supplier instead.
      */
-    public static <K, V> V getOrPut(@NotNull Map<K, V> map, K key, Supplier<V> supplier) {
+    @Nullable
+    public static <K, V> V getOrPut(@NotNull Map<K, V> map, @NotNull K key, @NotNull Supplier<V> supplier) {
         V value = map.get(key);
         if (value == null) {
             value = supplier.get();
@@ -45,6 +45,7 @@ public class Utils {
     /**
      * @return a global Gson instance.
      */
+    @NotNull
     public static Gson gson() {
         return gson;
     }

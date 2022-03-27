@@ -56,17 +56,16 @@ public class Obbo {
      * Wraps the passed object as a target inside the wrapping interface provided.
      *
      * <p>
-     * This method acts the same as calling the {@link #wrap(ClassLoader, Class, Object)}
-     * method using the current {@link Class#getClassLoader() class's classloader} as the
-     * {@link ClassLoader}
+     * this method uses their respective wrapping interface class'
+     * {@link ClassLoader} for the {@link Proxy proxy instance} and the target
+     * class' {@link ClassLoader} for the invocation handler.
      *
      * @param wrappingInterface the interface to use as proxy and control the
      *                          target with.
-     * @param target instance to wrap inside the interface and where the methods
-     *               will end up being called from.
-     * @param <I> the interface which is going to act as the target instance's
-     *           controller.
-     *
+     * @param target            instance to wrap inside the interface and where the methods
+     *                          will end up being called from.
+     * @param <I>               the interface which is going to act as the target instance's
+     *                          controller.
      * @return a {@link Proxy} of the target as the wrapping interface provided
      * encapsulating all their methods.
      */
@@ -79,34 +78,33 @@ public class Obbo {
     /**
      * Wraps the passed object as a target inside the wrapping interface provided.
      *
-     * @param loader to load the Proxy instance from.
+     * @param loader            to load the Proxy instance from.
      * @param wrappingInterface the interface to use as proxy and control the
      *                          target with.
-     * @param target instance to wrap inside the interface and where the methods
-     *               will end up being called from.
-     * @param <I> the interface which is going to act as the target instance's
-     *           controller.
-     *
+     * @param target            instance to wrap inside the interface and where the methods
+     *                          will end up being called from.
+     * @param <I>               the interface which is going to act as the target instance's
+     *                          controller.
      * @return a {@link Proxy} of the target as the wrapping interface provided
      * encapsulating all their methods.
      */
     public <I> I wrap(ClassLoader loader, Class<I> wrappingInterface, Object target) {
         Object instance = Proxy.newProxyInstance(loader, new Class[]{wrappingInterface},
-                new ObboInvocationHandler(this, resolver, wrappingInterface, target, loader));
+            new ObboInvocationHandler(this, resolver, wrappingInterface, target, loader));
         return wrappingInterface.cast(instance);
     }
 
     /**
      * Wraps the passed object as a target inside the wrapping interface provided.
      *
-     * @param loader to load the Proxy instance from.
-     * @param wrappingInterface the interface to use as proxy and control the
-     *                          target with.
-     * @param target instance to wrap inside the interface and where the methods
-     *               will end up being called from.
-     * @param <I> the interface which is going to act as the target instance's
-     *           controller.
-     *
+     * @param loader             to load the Proxy instance from.
+     * @param handlerClassloader to load the invocation handler instance from.
+     * @param wrappingInterface  the interface to use as proxy and control the
+     *                           target with.
+     * @param target             instance to wrap inside the interface and where the methods
+     *                           will end up being called from.
+     * @param <I>                the interface which is going to act as the target instance's
+     *                           controller.
      * @return a {@link Proxy} of the target as the wrapping interface provided
      * encapsulating all their methods.
      */

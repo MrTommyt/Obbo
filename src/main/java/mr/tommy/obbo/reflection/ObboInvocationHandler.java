@@ -80,19 +80,33 @@ public class ObboInvocationHandler implements InvocationHandler {
         this.resolver = resolver;
         this.wrappingInterface = wrappingInterface;
         this.obbo = obbo;
+        this.target = target;
+
+        //Get proxied class
         ClassData classData = ClassData.of(wrappingInterface);
         Proxy proxyInfo = classData.annotation(Proxy.class);
         this.proxiedClassData = resolver.resolveClass(proxyInfo.value(), loader);
-        this.target = target;
     }
 
+    /**
+     * Fixes the parameters given getting the class they are proxying
+     * if they have one
+     *
+     * @param params to fix.
+     * @return the classes we work internally with.
+     */
     private Class<?>[] fixParameters(Class<?>[] params) {
         for (int i = 0; i < params.length; i++) {
             Class<?> param = params[i];
+
+            //Check if this has a proxy annotation, if it does,
+            // then change this parameter to the class they're
+            // trying to proxy.
             ClassData data = ClassData.of(param);
             Proxy annotation = data.annotation(Proxy.class);
-            if (annotation == null)
+            if (annotation == null) {
                 continue;
+            }
 
             params[i] = resolver.resolveClass(annotation.value()).getCls();
         }
@@ -102,6 +116,7 @@ public class ObboInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Throwable {
         Class<?>[] params = fixParameters(method.getParameterTypes());
+
         Method proxyMethod = resolver.resolveMethod(
             proxiedClassData.getCls(),
             wrappingInterface,
@@ -109,6 +124,7 @@ public class ObboInvocationHandler implements InvocationHandler {
             params
         );
 
+        //Method does not exist, throw no such method error
         if (proxyMethod == null) {
             StringJoiner joiner = new StringJoiner(", ");
             if (args != null)
@@ -121,8 +137,14 @@ public class ObboInvocationHandler implements InvocationHandler {
             ));
         }
 
+        //Store the returned object from this method for being
+        // later processed.
         Object result = proxyMethod.invoke(target, args);
         Class<?> rType = method.getReturnType();
+
+        //First check if the return type of the method in the
+        // proxy class is another proxy, so we wrap the returned
+        // object inside it. If not, just return the normal object
         ClassData data = ClassData.of(rType);
         Proxy annotation = data.annotation(Proxy.class);
         if (annotation == null) {
