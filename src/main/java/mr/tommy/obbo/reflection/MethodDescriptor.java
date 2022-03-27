@@ -155,7 +155,7 @@ public class MethodDescriptor {
      *
      * @return a builder of the method descriptor.
      */
-    public static @NotNull Builder builder(String name, Class<?> ...params) {
-        return new Builder(name).parameterTypes(params);
+    public static @NotNull MethodDescriptor of(String name, Class<?> ...params) {
+        return new Builder(name).parameterTypes(params).build();
     }
 }

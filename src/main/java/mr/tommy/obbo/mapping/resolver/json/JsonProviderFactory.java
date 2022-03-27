@@ -73,8 +73,8 @@ public class JsonProviderFactory extends ProviderFactory<JsonElement> {
                 }
             } else if (type == DelegateType.STATIC_METHOD) {
                 try {
-                    return (String) data.method(MethodDescriptor.builder(value, params())
-                            .build()).getMethod().invoke(null);
+                    return (String) data.method(MethodDescriptor.of(value, params()))
+                        .getMethod().invoke(null);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }

@@ -122,7 +122,7 @@ public class ObboInvocationHandler implements InvocationHandler {
         //Check if the method does actually have a proxy annotation.
         // if it does, change the name of the method to the name used
         // in the annotation.
-        CachedMethod cm = this.proxiedClassData.method(MethodDescriptor.builder(mName, pTypes).build());
+        CachedMethod cm = this.proxiedClassData.method(MethodDescriptor.of(mName, pTypes));
         Proxy mpAnn = cm.getAnnotation(Proxy.class);
         if (mpAnn != null) {
             mName = mpAnn.value();
