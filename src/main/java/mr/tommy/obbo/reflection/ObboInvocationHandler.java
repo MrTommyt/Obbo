@@ -34,6 +34,8 @@ public class ObboInvocationHandler implements InvocationHandler {
     // this is where all the final method calls are going to be
     // invoked from.
     private final Object target;
+    //Used when it's necessary to wrap another instance inside
+    // another proxy class.
     private final Obbo obbo;
 
     /**
