@@ -99,17 +99,18 @@ public class ObboInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Throwable {
+        Class<?>[] params = fixParameters(method.getParameterTypes());
         Method proxyMethod = resolver.resolveMethod(
             proxiedClassData.getCls(),
             wrappingInterface,
             method.getName(),
-            fixParameters(method.getParameterTypes())
+            params
         );
 
         if (proxyMethod == null) {
             StringJoiner joiner = new StringJoiner(", ");
             if (args != null)
-                for (Object arg : args) joiner.add(arg.getClass().getSimpleName());
+                for (Object arg : params) joiner.add(arg.getClass().getSimpleName());
             throw new NoSuchMethodError(String.format("method %s(%s) not found on %s(%s)",
                 method.getName(),
                 joiner,
