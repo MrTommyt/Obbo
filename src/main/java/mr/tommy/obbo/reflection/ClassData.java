@@ -154,8 +154,13 @@ public class ClassData {
         synchronized (fieldMap) {
             return Utils.getOrPut(fieldMap, name, () -> {
                 try {
-                    Field field = cls.getDeclaredField(name);
-                    field.setAccessible(true);
+                    Field field;
+                    try {
+                        field = cls.getField(name);
+                    } catch (NoSuchFieldException e) {
+                        field = cls.getDeclaredField(name);
+                        field.setAccessible(true);
+                    }
                     return field;
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -215,12 +220,12 @@ public class ClassData {
                 } catch (NoSuchMethodException e) {
                     try {
                         method = cls.getDeclaredMethod(descriptor.getName(), descriptor.getParamTypes());
+                        method.setAccessible(true);
                     } catch (NoSuchMethodException ex) {
                         ex.printStackTrace();
                         return null;
                     }
                 }
-                method.setAccessible(true);
                 return new CachedMethod(method);
             });
         }
@@ -250,8 +255,13 @@ public class ClassData {
                     .parameterTypes(paramTypes)
                     .build(), () -> {
                 try {
-                    Constructor<?> constructor = cls.getDeclaredConstructor(paramTypes);
-                    constructor.setAccessible(true);
+                    Constructor<?> constructor;
+                    try {
+                        constructor = cls.getConstructor(paramTypes);
+                    } catch (NoSuchMethodException e) {
+                        constructor = cls.getDeclaredConstructor(paramTypes);
+                        constructor.setAccessible(true);
+                    }
                     return constructor;
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
