@@ -59,8 +59,9 @@ public class ResolveInfo {
     }
 
     public String parseField(String name) {
-        //TODO: Parse
-        return name;
+        Matcher matcher = replacePattern.matcher(name);
+        boolean m = matcher.matches();
+        return matcher.find() ? parseClass(matcher.replaceAll(this::replacer)) : name;
     }
 
     public ProviderFactory<?> getFactory() {

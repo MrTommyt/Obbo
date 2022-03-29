@@ -1,8 +1,8 @@
 {
   "variables": {
-    "base": "mr.tommy.obbo.test.simpletest",
-    "1": "@base@.v1",
-    "2": "@base@.v2",
+    "base": "mr.tommy.obbo.test",
+    "1": "@base@.methodinvoke.v1",
+    "2": "@base@.methodinvoke.v2",
     "nms": {
       "provider": "@base@.NMSProvider"
     }

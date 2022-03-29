@@ -1,4 +1,4 @@
-package mr.tommy.obbo.test.simpletest.v2;
+package mr.tommy.obbo.test.methodinvoke.v2;
 
 public class C2 {
     public int method2() {

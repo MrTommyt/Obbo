@@ -3,6 +3,7 @@ package mr.tommy.obbo.mapping.resolver.json;
 import mr.tommy.obbo.entity.ProviderRegistry;
 import mr.tommy.obbo.mapping.Resolver;
 import mr.tommy.obbo.mapping.resolver.Provider;
+import mr.tommy.obbo.reflection.CachedMethod;
 import mr.tommy.obbo.reflection.ClassData;
 import mr.tommy.obbo.reflection.MethodDescriptor;
 import mr.tommy.obbo.util.Utils;
@@ -134,9 +135,9 @@ public class JsonResolver implements Resolver {
      * instance.
      */
     @Override
-    public Method resolveMethod(Class<?> targetClass, Class<?> wrappingInterface, String methodName, Class<?>... params) {
+    public CachedMethod resolveMethod(Class<?> targetClass, Class<?> wrappingInterface, String methodName, Class<?>... params) {
         ClassData data = ClassData.of(targetClass);
-        return data.method(MethodDescriptor.of(info.parseMethod(methodName, data.getName()), params)).getMethod();
+        return data.method(MethodDescriptor.of(info.parseMethod(methodName, data.getName()), params));
     }
 
     /**

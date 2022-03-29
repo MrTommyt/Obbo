@@ -1,11 +1,13 @@
 package mr.tommy.obbo.reflection;
 
 import mr.tommy.obbo.Obbo;
+import mr.tommy.obbo.entity.FieldProxy;
 import mr.tommy.obbo.entity.Proxy;
 import mr.tommy.obbo.mapping.Resolver;
 import mr.tommy.obbo.util.Utils;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.StringJoiner;
@@ -95,16 +97,34 @@ public class ObboInvocationHandler implements InvocationHandler {
         Class<?>[] params = Utils.fixParameters(pTypes, resolver);
         String mName = method.getName();
 
+        CachedMethod cm = ClassData.of(wrappingInterface).method(MethodDescriptor.of(mName, pTypes));
+        //Check if the method does have a field proxy annotation.
+        // if it does, then return the value inside the given field
+        // or set it as the first argument given
+        FieldProxy fpAnn = cm.getAnnotation(FieldProxy.class);
+        if (fpAnn != null) {
+            String value = fpAnn.value();
+            Field field = value.isBlank() ? proxiedClassData.field(method.getName())
+                : resolver.resolveField(proxiedClassData.getCls(), value);
+
+            if (args != null && args.length > 0) {
+                Object arg = args[0];
+                field.set(target, arg);
+                return arg;
+            } else {
+                return field.get(target);
+            }
+        }
+
         //Check if the method does actually have a proxy annotation.
         // if it does, change the name of the method to the name used
         // in the annotation.
-        CachedMethod cm = this.proxiedClassData.method(MethodDescriptor.of(mName, pTypes));
         Proxy mpAnn = cm.getAnnotation(Proxy.class);
         if (mpAnn != null) {
             mName = mpAnn.value();
         }
 
-        Method proxyMethod = resolver.resolveMethod(
+        CachedMethod proxyMethod = resolver.resolveMethod(
             proxiedClassData.getCls(),
             wrappingInterface,
             mName,
@@ -126,7 +146,7 @@ public class ObboInvocationHandler implements InvocationHandler {
 
         //Store the returned object from this method for being
         // later processed.
-        Object result = proxyMethod.invoke(target, args);
+        Object result = proxyMethod.getMethod().invoke(target, args);
         Class<?> rType = method.getReturnType();
 
         //First check if the return type of the method in the

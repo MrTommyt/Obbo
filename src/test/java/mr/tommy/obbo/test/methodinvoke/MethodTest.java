@@ -1,18 +1,17 @@
-package mr.tommy.obbo.test.simpletest;
+package mr.tommy.obbo.test.methodinvoke;
 
 import mr.tommy.obbo.Obbo;
 import mr.tommy.obbo.mapping.resolver.Provider;
 import mr.tommy.obbo.mapping.resolver.RetentionType;
 import mr.tommy.obbo.mapping.resolver.json.JsonResolver;
-import mr.tommy.obbo.test.simpletest.v1.C1;
-import mr.tommy.obbo.test.simpletest.v2.C2;
+import mr.tommy.obbo.test.methodinvoke.v1.C1;
+import mr.tommy.obbo.test.methodinvoke.v2.C2;
 import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class MappingTest {
+public class MethodTest {
     public int i = 1;
     interface ProviderImpl extends Provider {
         @Override
@@ -21,7 +20,7 @@ public class MappingTest {
         }
     }
 
-    @Test
+    @org.junit.Test
     public void test() {
         InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("resolver.json");
         Assert.assertNotNull(stream);

@@ -2,6 +2,7 @@ package mr.tommy.obbo.mapping;
 
 import mr.tommy.obbo.entity.ProviderRegistry;
 import mr.tommy.obbo.entity.Proxy;
+import mr.tommy.obbo.reflection.CachedMethod;
 import mr.tommy.obbo.reflection.ClassData;
 
 import java.lang.reflect.Field;
@@ -56,7 +57,7 @@ public interface Resolver {
      * @return the method of the given method name resolved with the
      * passed parameters.
      */
-    Method resolveMethod(Class<?> targetClass, Class<?> wrappingInterface, String methodName, Class<?>... params);
+    CachedMethod resolveMethod(Class<?> targetClass, Class<?> wrappingInterface, String methodName, Class<?>... params);
 
     /**
      * Resolves the field of the given field name from the class.
