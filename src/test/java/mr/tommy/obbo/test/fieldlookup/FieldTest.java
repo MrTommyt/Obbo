@@ -60,9 +60,9 @@ public class FieldTest {
         resolver.registerProvider("c", pc);
         resolver.registerProvider("i", pi);
 
-        assertSet(obbo.wrap(Wrapper.class, new C1()), ref.i);
+        assertSet(obbo.wrap(Wrapper.class, new C1()), 2);
         ref.i = 2;
-        assertSet(obbo.wrap(Wrapper.class, new C2()), ref.i);
+        assertSet(obbo.wrap(Wrapper.class, new C2()), 1);
     }
 
     public void assertGet(Wrapper wrapper, int i) {
