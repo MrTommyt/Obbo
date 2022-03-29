@@ -3,6 +3,7 @@ package mr.tommy.obbo.reflection;
 import mr.tommy.obbo.Obbo;
 import mr.tommy.obbo.entity.Proxy;
 import mr.tommy.obbo.mapping.Resolver;
+import mr.tommy.obbo.util.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationHandler;
@@ -88,35 +89,10 @@ public class ObboInvocationHandler implements InvocationHandler {
         this.proxiedClassData = resolver.resolveClass(proxyInfo.value(), loader);
     }
 
-    /**
-     * Fixes the parameters given getting the class they are proxying
-     * if they have one
-     *
-     * @param params to fix.
-     * @return the classes we work internally with.
-     */
-    private Class<?>[] fixParameters(Class<?>[] params) {
-        for (int i = 0; i < params.length; i++) {
-            Class<?> param = params[i];
-
-            //Check if this has a proxy annotation, if it does,
-            // then change this parameter to the class they're
-            // trying to proxy.
-            ClassData data = ClassData.of(param);
-            Proxy annotation = data.annotation(Proxy.class);
-            if (annotation == null) {
-                continue;
-            }
-
-            params[i] = resolver.resolveClass(annotation.value()).getCls();
-        }
-        return params;
-    }
-
     @Override
     public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Throwable {
         Class<?>[] pTypes = method.getParameterTypes();
-        Class<?>[] params = fixParameters(pTypes);
+        Class<?>[] params = Utils.fixParameters(pTypes, resolver);
         String mName = method.getName();
 
         //Check if the method does actually have a proxy annotation.

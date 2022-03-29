@@ -2,9 +2,14 @@ package mr.tommy.obbo;
 
 import mr.tommy.obbo.mapping.Resolver;
 import mr.tommy.obbo.mapping.resolver.Provider;
+import mr.tommy.obbo.reflection.ClassData;
 import mr.tommy.obbo.reflection.ObboInvocationHandler;
+import mr.tommy.obbo.util.Utils;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+import java.util.StringJoiner;
 
 /**
  * This is the main class of the Project. If you want to start using
@@ -112,5 +117,59 @@ public class Obbo {
         Object instance = Proxy.newProxyInstance(loader, new Class[]{wrappingInterface},
             new ObboInvocationHandler(this, resolver, wrappingInterface, target, handlerClassloader));
         return wrappingInterface.cast(instance);
+    }
+
+    /**
+     * Creates a new instance of the proxied class by the wrapping interface and
+     * returned wrapped inside the given wrapping interface.
+     *
+     * @param wrappingInterface class to wrap the new instance to and to get the
+     *                          internal proxied class from the
+     *                          {@link mr.tommy.obbo.entity.Proxy proxy annotation}.
+     *                          an {@link IllegalArgumentException} will be thrown
+     *                          if the wrapping interface does not have the proxy
+     *                          annotation.
+     * @param paramTypes        of the constructor to be using to look it from.
+     * @param args              to call the constructor.
+     * @param <I>               the wrapping interface type to wrap the returned
+     *                          instance created from the constructor to.
+     * @return a new instance of the proxied class by the wrapping interface encapsulated
+     * inside the wrapping interface.
+     * @throws IllegalArgumentException if the wrapping interface does not have the
+     *                                  {@link mr.tommy.obbo.entity.Proxy proxy annotation}.
+     * @throws RuntimeException         if the constructor with the given parameter types
+     *                                  was not found.
+     * @throws IllegalStateException    if an error occurs when instantiating the class
+     *                                  from the constructor
+     * @see mr.tommy.obbo.entity.Proxy
+     */
+    public <I> I newInstance(Class<I> wrappingInterface, Class<?>[] paramTypes, Object... args) {
+        //Get proxied class
+        ClassData classData = ClassData.of(wrappingInterface);
+        mr.tommy.obbo.entity.Proxy proxyInfo = classData.annotation(mr.tommy.obbo.entity.Proxy.class);
+        if (proxyInfo == null) {
+            throw new IllegalArgumentException("Wrapping interface does not have the proxy annotation");
+        }
+
+        //Get the constructor from the given paramTypes
+        Utils.fixParameters(paramTypes, resolver);
+        ClassData proxiedClass = resolver.resolveClass(proxyInfo.value());
+        Constructor<?> constructor = proxiedClass.constructor(paramTypes);
+        if (constructor == null) {
+            StringJoiner joiner = new StringJoiner(", ");
+            throw new RuntimeException(
+                String.format("constructor(%s) not found when instantiating %s", joiner, wrappingInterface));
+        }
+
+        //Attempts to instantiate the given instance using its constructor,
+        // runtime exception will be thrown if turns out not being possible.
+        Object instance;
+        try {
+            constructor.setAccessible(true);
+            instance = constructor.newInstance(args);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Instance could not be instantiated", e);
+        }
+        return wrap(wrappingInterface, instance);
     }
 }

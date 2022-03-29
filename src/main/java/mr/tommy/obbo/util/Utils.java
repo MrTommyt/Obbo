@@ -1,11 +1,16 @@
 package mr.tommy.obbo.util;
 
 import com.google.gson.Gson;
+import mr.tommy.obbo.entity.Proxy;
+import mr.tommy.obbo.mapping.Resolver;
+import mr.tommy.obbo.reflection.ClassData;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 /**
  * Util class for some things used a lot in the developing of this project.
@@ -13,6 +18,8 @@ import java.util.function.Supplier;
 public class Utils {
     //Global gson instance used for commodity
     private static final Gson gson = new Gson();
+    //Global logger instance
+    private static final Logger logger = Logger.getLogger("Obbo");
 
     /**
      * Gets the value of a map and if the value is null or doesn't exist then the supplier
@@ -48,5 +55,39 @@ public class Utils {
     @NotNull
     public static Gson gson() {
         return gson;
+    }
+
+    /**
+     * @return the global logger of this library
+     */
+    @NotNull
+    public static Logger logger() {
+        return logger;
+    }
+
+    /**
+     * Fixes the parameters given getting the class they are proxying
+     * if they have one
+     *
+     * @param params to fix.
+     * @return the classes we work internally with.
+     */
+    @Contract("_, _ -> param1")
+    public static Class<?>[] fixParameters(@NotNull Class<?>[] params, @NotNull Resolver resolver) {
+        for (int i = 0; i < params.length; i++) {
+            Class<?> param = params[i];
+
+            //Check if this has a proxy annotation, if it does,
+            // then change this parameter to the class they're
+            // trying to proxy.
+            ClassData data = ClassData.of(param);
+            Proxy annotation = data.annotation(Proxy.class);
+            if (annotation == null) {
+                continue;
+            }
+
+            params[i] = resolver.resolveClass(annotation.value()).getCls();
+        }
+        return params;
     }
 }
