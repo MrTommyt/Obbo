@@ -4,8 +4,6 @@ import mr.tommy.obbo.Obbo;
 import mr.tommy.obbo.mapping.resolver.Provider;
 import mr.tommy.obbo.mapping.resolver.RetentionType;
 import mr.tommy.obbo.mapping.resolver.json.JsonResolver;
-import mr.tommy.obbo.test.methodinvoke.v1.C1;
-import mr.tommy.obbo.test.methodinvoke.v2.C2;
 import org.junit.Assert;
 
 import java.io.InputStream;
@@ -33,9 +31,11 @@ public class MethodTest {
         resolver.registerProvider("v", pv);
         resolver.registerProvider("c", pc);
 
-        consumeWrapper(obbo.wrap(Wrapper.class, new C1()));
+        Wrapper w1 = obbo.newInstance(Wrapper.class, new Class[]{});
+        consumeWrapper(w1);
         i = 2;
-        consumeWrapper(obbo.wrap(Wrapper.class, new C2()));
+        Wrapper w2 = obbo.newInstance(Wrapper.class, new Class[]{});
+        consumeWrapper(w2);
     }
 
     public void consumeWrapper(Wrapper wrapper) {

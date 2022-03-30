@@ -4,8 +4,6 @@ import mr.tommy.obbo.Obbo;
 import mr.tommy.obbo.mapping.resolver.Provider;
 import mr.tommy.obbo.mapping.resolver.RetentionType;
 import mr.tommy.obbo.mapping.resolver.json.JsonResolver;
-import mr.tommy.obbo.test.fieldlookup.v1.C1;
-import mr.tommy.obbo.test.fieldlookup.v2.C2;
 import org.junit.Assert;
 
 import java.io.InputStream;
@@ -37,9 +35,11 @@ public class FieldTest {
         resolver.registerProvider("c", pc);
         resolver.registerProvider("i", pi);
 
-        assertGet(obbo.wrap(Wrapper.class, new C1()), ref.i);
+        Wrapper w1 = obbo.newInstance(Wrapper.class, new Class[]{});
+        assertGet(w1, ref.i);
         ref.i = 2;
-        assertGet(obbo.wrap(Wrapper.class, new C2()), ref.i);
+        Wrapper w2 = obbo.newInstance(Wrapper.class, new Class[]{});
+        assertGet(w2, ref.i);
     }
 
     @org.junit.Test
@@ -60,9 +60,11 @@ public class FieldTest {
         resolver.registerProvider("c", pc);
         resolver.registerProvider("i", pi);
 
-        assertSet(obbo.wrap(Wrapper.class, new C1()), 2);
+        Wrapper w1 = obbo.newInstance(Wrapper.class, new Class[]{});
+        assertSet(w1, 2);
         ref.i = 2;
-        assertSet(obbo.wrap(Wrapper.class, new C2()), 1);
+        Wrapper w2 = obbo.newInstance(Wrapper.class, new Class[]{});
+        assertSet(w2, 1);
     }
 
     public void assertGet(Wrapper wrapper, int i) {

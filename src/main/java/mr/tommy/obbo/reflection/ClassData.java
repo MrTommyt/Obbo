@@ -251,7 +251,7 @@ public class ClassData {
      */
     public Constructor<?> constructor(Class<?>... paramTypes) {
         synchronized (constructorMap) {
-            return Utils.getOrPut(constructorMap, MethodDescriptor.builder(null)
+            return Utils.getOrPut(constructorMap, MethodDescriptor.builder("<init>")
                     .parameterTypes(paramTypes)
                     .build(), () -> {
                 try {
