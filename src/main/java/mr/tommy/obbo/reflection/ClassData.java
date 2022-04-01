@@ -159,8 +159,8 @@ public class ClassData {
                         field = cls.getField(name);
                     } catch (NoSuchFieldException e) {
                         field = cls.getDeclaredField(name);
-                        field.setAccessible(true);
                     }
+                    field.setAccessible(true);
                     return field;
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -220,12 +220,12 @@ public class ClassData {
                 } catch (NoSuchMethodException e) {
                     try {
                         method = cls.getDeclaredMethod(descriptor.getName(), descriptor.getParamTypes());
-                        method.setAccessible(true);
                     } catch (NoSuchMethodException ex) {
                         ex.printStackTrace();
                         return null;
                     }
                 }
+                method.setAccessible(true);
                 return new CachedMethod(method);
             });
         }
@@ -260,8 +260,8 @@ public class ClassData {
                         constructor = cls.getConstructor(paramTypes);
                     } catch (NoSuchMethodException e) {
                         constructor = cls.getDeclaredConstructor(paramTypes);
-                        constructor.setAccessible(true);
                     }
+                    constructor.setAccessible(true);
                     return constructor;
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
