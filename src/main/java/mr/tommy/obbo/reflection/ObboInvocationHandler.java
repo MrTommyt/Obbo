@@ -109,6 +109,22 @@ public class ObboInvocationHandler implements InvocationHandler {
         //Get the cached method of the wrapping method to check their
         // annotations.
         CachedMethod cm = ClassData.of(wrappingInterface).method(MethodDescriptor.of(mName, pTypes));
+
+        //Unwrap the arguments in case they are Obbo proxies
+        Object[] unwrappedArgs = args == null ? new Object[0] : args.clone();
+        for (int i = 0; i < unwrappedArgs.length; i++) {
+            Object arg = unwrappedArgs[i];
+            if (!java.lang.reflect.Proxy.isProxyClass(arg.getClass()))
+                continue;
+
+            InvocationHandler ih = java.lang.reflect.Proxy.getInvocationHandler(arg);
+            if (!(ih instanceof ObboInvocationHandler))
+                continue;
+
+            ObboInvocationHandler oih = (ObboInvocationHandler) ih;
+            unwrappedArgs[i] = oih.target;
+        }
+
         //Check if the method does have a field proxy annotation.
         // if it does, then return the value inside the given field
         // or set it as the first argument given
@@ -118,8 +134,8 @@ public class ObboInvocationHandler implements InvocationHandler {
             Field field = value.isBlank() ? proxiedClassData.field(method.getName())
                 : resolver.resolveField(proxiedClassData.getCls(), value);
 
-            if (args != null && args.length > 0) {
-                Object arg = args[0];
+            if (unwrappedArgs.length > 0) {
+                Object arg = unwrappedArgs[0];
                 field.set(target, arg);
                 return arg;
             } else {
@@ -145,12 +161,12 @@ public class ObboInvocationHandler implements InvocationHandler {
 
         //Method does not exist, throw no such method error
         if (proxyMethod == null) {
-            throwMethodNotFound(mName, params, args);
+            throwMethodNotFound(mName, params, unwrappedArgs);
         }
 
         //Store the returned object from this method for being
         // later processed.
-        Object result = proxyMethod.getMethod().invoke(target, args);
+        Object result = proxyMethod.getMethod().invoke(target, unwrappedArgs);
         return wrap0(result, rType);
     }
 
