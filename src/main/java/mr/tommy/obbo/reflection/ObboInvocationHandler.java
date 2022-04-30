@@ -5,11 +5,14 @@ import mr.tommy.obbo.entity.FieldProxy;
 import mr.tommy.obbo.entity.Proxy;
 import mr.tommy.obbo.mapping.Resolver;
 import mr.tommy.obbo.util.Utils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.StringJoiner;
 
 /**
@@ -35,7 +38,8 @@ public class ObboInvocationHandler implements InvocationHandler {
     private final ClassData proxiedClassData;
     //The target object which is wrapped inside the Proxy class.
     // this is where all the final method calls are going to be
-    // invoked from.
+    // invoked from. Null if static
+    @Nullable
     private final Object target;
     //Used when it's necessary to wrap another instance inside
     // another proxy class.
@@ -54,13 +58,17 @@ public class ObboInvocationHandler implements InvocationHandler {
      *                          to be called.
      * @param target            where the parsed method will be invoked from
      */
-    public ObboInvocationHandler(Obbo obbo, @NotNull Resolver resolver, Class<?> wrappingInterface, Object target) {
+    public ObboInvocationHandler(Obbo obbo, @NotNull Resolver resolver, Class<?> wrappingInterface, @Nullable Object target) {
         this.obbo = obbo;
         this.resolver = resolver;
         this.wrappingInterface = wrappingInterface;
         ClassData classData = ClassData.of(wrappingInterface);
         Proxy proxyInfo = classData.annotation(Proxy.class);
-        this.proxiedClassData = resolver.resolveClass(proxyInfo.value(), target.getClass().getClassLoader());
+        if (target == null) {
+            this.proxiedClassData = resolver.resolveClass(proxyInfo.value());
+        } else {
+            this.proxiedClassData = resolver.resolveClass(proxyInfo.value(), target.getClass().getClassLoader());
+        }
         this.target = target;
     }
 
@@ -79,7 +87,7 @@ public class ObboInvocationHandler implements InvocationHandler {
      *                          when resolved.
      * @param loader            to load the classloader.
      */
-    public ObboInvocationHandler(Obbo obbo, @NotNull Resolver resolver, Class<?> wrappingInterface, Object target, ClassLoader loader) {
+    public ObboInvocationHandler(Obbo obbo, @NotNull Resolver resolver, Class<?> wrappingInterface, @Nullable Object target, ClassLoader loader) {
         this.resolver = resolver;
         this.wrappingInterface = wrappingInterface;
         this.obbo = obbo;
@@ -94,9 +102,12 @@ public class ObboInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Throwable {
         Class<?>[] pTypes = method.getParameterTypes();
-        Class<?>[] params = Utils.fixParameters(pTypes, resolver);
+        Class<?>[] params = Utils.fixParameters(pTypes.clone(), resolver);
         String mName = method.getName();
+        Class<?> rType = method.getReturnType();
 
+        //Get the cached method of the wrapping method to check their
+        // annotations.
         CachedMethod cm = ClassData.of(wrappingInterface).method(MethodDescriptor.of(mName, pTypes));
         //Check if the method does have a field proxy annotation.
         // if it does, then return the value inside the given field
@@ -112,7 +123,8 @@ public class ObboInvocationHandler implements InvocationHandler {
                 field.set(target, arg);
                 return arg;
             } else {
-                return field.get(target);
+                Object result = field.get(target);
+                return wrap0(result, rType);
             }
         }
 
@@ -133,22 +145,16 @@ public class ObboInvocationHandler implements InvocationHandler {
 
         //Method does not exist, throw no such method error
         if (proxyMethod == null) {
-            StringJoiner joiner = new StringJoiner(", ");
-            if (args != null)
-                for (Object arg : params) joiner.add(arg.getClass().getSimpleName());
-            throw new NoSuchMethodError(String.format("method %s(%s) not found on %s(%s)",
-                mName,
-                joiner,
-                target.getClass().getSimpleName(),
-                wrappingInterface.getSimpleName()
-            ));
+            throwMethodNotFound(mName, params, args);
         }
 
         //Store the returned object from this method for being
         // later processed.
         Object result = proxyMethod.getMethod().invoke(target, args);
-        Class<?> rType = method.getReturnType();
+        return wrap0(result, rType);
+    }
 
+    private Object wrap0(Object result, Class<?> rType) {
         //First check if the return type of the method in the
         // proxy class is another proxy, so we wrap the returned
         // object inside it. If not, just return the normal object
@@ -159,5 +165,18 @@ public class ObboInvocationHandler implements InvocationHandler {
         }
 
         return obbo.wrap(rType, result);
+    }
+
+    @Contract("_, _, _ -> fail")
+    private void throwMethodNotFound(String mName, Class<?>[] params, Object[] args) {
+        StringJoiner joiner = new StringJoiner(", ");
+        if (args != null)
+            for (Class<?> arg : params) joiner.add(arg.getSimpleName());
+        throw new NoSuchMethodError(String.format("method %s(%s) not found on %s(%s)",
+            mName,
+            joiner,
+            proxiedClassData.getCls().getSimpleName(),
+            wrappingInterface.getSimpleName()
+        ));
     }
 }

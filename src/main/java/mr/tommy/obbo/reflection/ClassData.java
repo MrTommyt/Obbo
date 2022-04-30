@@ -99,6 +99,11 @@ public class ClassData {
                     return null;
                 }
             });
+
+            if (cls == null) {
+                return null;
+            }
+
             return of(cls);
         }
     }
@@ -124,6 +129,11 @@ public class ClassData {
                     return null;
                 }
             });
+
+            if (cls == null) {
+                return null;
+            }
+
             return of(cls);
         }
     }
