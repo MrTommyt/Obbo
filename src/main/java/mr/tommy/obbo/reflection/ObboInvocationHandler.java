@@ -170,7 +170,12 @@ public class ObboInvocationHandler implements InvocationHandler {
         return wrap0(result, rType);
     }
 
+    @Contract("null, _ -> null")
     private Object wrap0(Object result, Class<?> rType) {
+        if (result == null) {
+            return null;
+        }
+
         //First check if the return type of the method in the
         // proxy class is another proxy, so we wrap the returned
         // object inside it. If not, just return the normal object
