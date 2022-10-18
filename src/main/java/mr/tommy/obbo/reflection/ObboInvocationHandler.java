@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -150,6 +152,16 @@ public class ObboInvocationHandler implements InvocationHandler {
         Proxy mpAnn = cm.getAnnotation(Proxy.class);
         if (mpAnn != null) {
             mName = mpAnn.value();
+        }
+
+        if (method.isDefault()) {
+            Class<?> dc = method.getDeclaringClass();
+            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
+            constructor.setAccessible(true);
+            return constructor.newInstance(dc)
+                .unreflectSpecial(method, dc)
+                .bindTo(proxy)
+                .invokeWithArguments(unwrappedArgs);
         }
 
         CachedMethod proxyMethod = resolver.resolveMethod(
